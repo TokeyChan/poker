@@ -1,7 +1,7 @@
 from .deck import Deck
 from .player import Player
 
-from .scores import execute as execute_score
+from .scores import execute as execute_score, handle_draw
 
 class Game:
     # statics
@@ -95,7 +95,7 @@ class Game:
                     player.set_bet(player.bet + player.chips)
                     self.debugList[i] = 'a'
 
-        self.pot = self.active_pot
+        self.pot += self.active_pot
 
     def _flop(self):
         self.current_round = GameRounds.FLOP
@@ -116,18 +116,32 @@ class Game:
         print([str(card) for card in self.board])
 
     def _ending(self):
-        for player in [p for p in self.active_players if not p.is_folded]:
-            results = execute_score([player.hand[0], player.hand[1]] + self.board)
-
-            if len(results) == 0:
-                print(player.name)
-                print("opfa")
+        scores = []
+        for player in self.active_players:
+            if player.is_folded:
                 continue
+            player.hand = [player.hand[0], player.hand[1]] + self.board
+            scores.append([player, execute_score(player.hand)])
 
-            max_ = max(results, key=lambda x: x[1])
+        if len(scores) == 0:
+            print("High Card")
+        
+        max_ = max(scores, key=lambda x: x[1][1])[1]
 
-            print(player.name)
-            print(max_)
+        winners = [p for p in scores if p[1][1] == max_[1]]
+
+        if len(winners) != 1:
+            winners = handle_draw(max_, winners)
+
+        if len(winners) == 1:
+            winner = winners[0]
+            winner[0].chips += self.entire_pot
+            self.pot = 0
+            print(f"Congratulations {winner[0].name}! You won with a {winner[1][0]} and now have {winner[0].chips} chips!")
+            self._setup()
+            return
+
+        print("boop")
 
     def all_players_finished(self):
         return all([p.action_completed or p.is_folded or p.is_all_in for p in self.active_players])

@@ -23,6 +23,9 @@ class Player:
     def __str__(self):
         return self.name
 
+    def __repr__(self):
+        return self.name
+
     def buy_in(self, value):
         self.chips += value
 
@@ -60,6 +63,7 @@ class Player:
         if raise_100_is_possible:
             possible_actions.append('RAISE_100')
 
+        """
         self.action_completed = True
         if check_is_possible:
             return "CHECK"
@@ -67,6 +71,7 @@ class Player:
             return "CALL"
         else:
             return "FOLD"
+        """
 
         action = None
         if True:

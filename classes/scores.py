@@ -33,7 +33,7 @@ def execute(cards):
         if result is not None:
             results.append([scoring[0], scoring[2], result])
 
-    return results
+    return max(results, key=lambda x: x[1]) if len(results) > 0 else ["HIGH_CARD", 0, sorted(cards, key=lambda x: x.value, reverse=True)[0]]
 
 
 def has_pair(cards): # Card[]
@@ -144,13 +144,15 @@ SCORINGS = [
     ("STRAIGHT_FLUSH", has_straight_flush, 8)
 ]
 
+def handle_draw(max_, winners):
+    print(f"DRAW WITH A {max_[0]}")
+    match max_[0]:
+        case 'PAIR':
+            highest_pair_value = max(winners, key=lambda x: x[1][2][0].value)
 
-execute([
-    Card(0, 1),
-    Card(0, 2),
-    Card(0, 3),
-    Card(0, 4),
-    Card(0, 5),
-    Card(0, 6),
-    Card(2, 8)
-])
+            if len([p for p in winners if p[1][2][0].value == highest_pair_value[1][2][0].value]) == 1:
+                return [highest_pair_value]
+
+            hands = [sorted(p[0].hand, key=lambda x: x.value) for p in winners]
+
+    return []
