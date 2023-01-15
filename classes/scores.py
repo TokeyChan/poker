@@ -1,4 +1,4 @@
-from card import Card
+from .card import Card
 
 ACE_VALUE = 12
 
@@ -31,14 +31,14 @@ def execute(cards):
             card.is_used = False
         result = scoring[1](cards)
         if result is not None:
-            results.append([scoring[0], result])
+            results.append([scoring[0], scoring[2], result])
 
-    #print(results)
+    return results
 
 
 def has_pair(cards): # Card[]
     for card in cards:
-        sames = [c for c in cards if c.value == card.value]
+        sames = [c for c in cards if c.value == card.value and not c.is_used]
 
         if len(sames) >= 2:
             return sames[:2]
@@ -46,12 +46,16 @@ def has_pair(cards): # Card[]
 def has_two_pair(cards):
     pair_1 = has_pair(cards)
 
+    if pair_1 is None:
+        return
+
     for card in pair_1:
         card.is_used = True
 
     pair_2 = has_pair([c for c in cards if not c.is_used])
 
-    return [pair_1, pair_2]
+    if pair_1 and pair_2:
+        return [pair_1, pair_2]
 
 def has_triple(cards):
     for card in cards:
@@ -68,41 +72,85 @@ def has_poker(cards):
             return sames
 
 def has_straight(cards):
-    values = sorted(list(set([c.value + 1 for c in cards])), reverse=True)
+    values = [(c.value + 1, c) for c in cards]
+    result = []
 
     if ACE_VALUE + 1 in values:
         values.append(0)
 
-    streak = 1
+    streak = []
     last_val = -100
+    last_card = None
 
-    for val in values:
+    for val, card in values:
         if last_val - 1 == val:
-            streak += 1
-            if streak == 5:
-                print(streak)
-        else:
-            streak = 1
+            if len(streak) == 0:
+                streak.append(last_card)
+            streak.append(card)
+
+            if len(streak) == 5:
+                result.append(list(reversed(streak)))
+                streak.pop(0)
+        elif last_val != val:
+            streak = []
         last_val = val
+        last_card = card
+
+    return result if len(result) > 0 else None
+
+def has_flush(cards):
+    five_same = [suit for suit in range(4) if len([c for c in cards if c.suit == suit]) >= 5]
+
+    if len(five_same) == 0:
+        return
+
+    suit = five_same[0]
+    return [c for c in cards if c.suit == suit][:5]
+
+def has_full_house(cards):
+    triple = has_triple(cards)
+
+    if triple is None:
+        return
+    
+    for card in triple:
+        card.is_used = True
+    
+    pair = has_pair(cards)
+
+    if pair is None:
+        return
+
+    
+
+def has_straight_flush(cards):
+    straights = has_straight(cards)
+
+    if straights is None:
+        return
+
+    for straight in straights:
+        if len(set([card.suit for card in straight])) == 1:
+            return straight
 
 SCORINGS = [
-    ("PAIR", has_pair),
-    ("TWO_PAIR", has_two_pair),
-    ("TRIPLE", has_triple),
-    ("STRAIGHT", has_straight),
-    #("FLUSH", has_flush),
-    #("FULL_HOUSE", has_full_house),
-    ("POKER", has_poker),
-    #("STRAIGHT_FLUSH", has_straight_flush)
+    ("PAIR", has_pair, 1),
+    ("TWO_PAIR", has_two_pair, 2),
+    ("TRIPLE", has_triple, 3),
+    ("STRAIGHT", has_straight, 4),
+    ("FLUSH", has_flush, 5),
+    ("FULL_HOUSE", has_full_house, 6),
+    ("POKER", has_poker, 7),
+    ("STRAIGHT_FLUSH", has_straight_flush, 8)
 ]
 
 
 execute([
-    Card(0, 10),
-    Card(1, 8),
-    Card(1, 11),
-    Card(2, 9),
-    Card(0, 10),
-    Card(3, 12),
+    Card(0, 1),
+    Card(0, 2),
+    Card(0, 3),
+    Card(0, 4),
+    Card(0, 5),
+    Card(0, 6),
     Card(2, 8)
 ])

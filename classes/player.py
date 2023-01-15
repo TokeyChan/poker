@@ -60,6 +60,14 @@ class Player:
         if raise_100_is_possible:
             possible_actions.append('RAISE_100')
 
+        self.action_completed = True
+        if check_is_possible:
+            return "CHECK"
+        elif call_is_possible:
+            return "CALL"
+        else:
+            return "FOLD"
+
         action = None
         if True:
             print(f"Hi {self.name}!")

@@ -1,6 +1,8 @@
 from .deck import Deck
 from .player import Player
 
+from .scores import execute as execute_score
+
 class Game:
     # statics
     PLAYER_COUNT = 6
@@ -69,7 +71,7 @@ class Game:
 
             i = self.betting_index % 6
             self.debugList[i] = 'x'
-            print(self.debugList)
+            print(self.debugList) 
             self.debugList[i] = ''
 
             action = player.ask_for_action(self.entire_pot, self.highest_bet)
@@ -114,7 +116,18 @@ class Game:
         print([str(card) for card in self.board])
 
     def _ending(self):
-        print("Pech, kein Bock mehr")
+        for player in [p for p in self.active_players if not p.is_folded]:
+            results = execute_score([player.hand[0], player.hand[1]] + self.board)
+
+            if len(results) == 0:
+                print(player.name)
+                print("opfa")
+                continue
+
+            max_ = max(results, key=lambda x: x[1])
+
+            print(player.name)
+            print(max_)
 
     def all_players_finished(self):
         return all([p.action_completed or p.is_folded or p.is_all_in for p in self.active_players])
