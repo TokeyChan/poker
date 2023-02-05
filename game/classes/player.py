@@ -5,6 +5,7 @@ PLAYER_ACTIONS = ["FOLD", "CHECK", "CALL", "ALL_IN", "RAISE_50", "RAISE_75", "RA
 class Player:
     # general
     chips = 0
+    INITIAL_CHIPS = 0
     name = ""
     
     # game
@@ -18,6 +19,7 @@ class Player:
     
     def __init__(self, chips):
         self.chips = chips
+        self.INITIAL_CHIPS = chips
         self.name = names.get_first_name()
 
     def __str__(self):
@@ -37,6 +39,8 @@ class Player:
         self.action_completed = False
 
     def hard_reset(self):
+        if self.chips == 0:
+            self.chips += self.INITIAL_CHIPS
         self.bet = 0
         self.action_completed = False
         self.is_all_in = False

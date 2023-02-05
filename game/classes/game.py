@@ -74,7 +74,12 @@ class Game:
             print(self.debugList) 
             self.debugList[i] = ''
 
-            action = player.ask_for_action(self.entire_pot, self.highest_bet)
+            not_folded_players = [p for p in self.active_players if not p.is_folded]
+            if (len(not_folded_players) == 1):
+                action = 'CHECK'
+                player.action_completed = True
+            else:
+                action = player.ask_for_action(self.entire_pot, self.highest_bet)
 
             match action:
                 case 'FOLD':
@@ -139,9 +144,6 @@ class Game:
             self.pot = 0
             print(f"Congratulations {winner[0].name}! You won with a {winner[1][0]} and now have {winner[0].chips} chips!")
             self._setup()
-            return
-
-        print("boop")
 
     def all_players_finished(self):
         return all([p.action_completed or p.is_folded or p.is_all_in for p in self.active_players])
